@@ -1,0 +1,654 @@
+`html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced ADHD Grocery Tool 🥕</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            background: url('https://images.pexels.com/photos/264547/pexels-photo-264547.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1080') no-repeat center center fixed;
+            background-size: cover;
+            background-color: #fffdd0; /* Fallback: cream */
+            color: #333;
+            line-height: 1.6;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 253, 208, 0.6); /* Cream overlay for readability */
+            z-index: -1;
+        }
+        h1, h2, h3, h4 {
+            color: #ff6347; /* Tomato red */
+            text-align: center;
+            animation: bounceIn 1s ease-in;
+        }
+        .info, .custom-request, .category {
+            background-color: rgba(255, 250, 205, 0.9); /* Lemon chiffon */
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.8s ease-out;
+        }
+        .item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 2px solid #6b8e23; /* Olive green */
+            border-radius: 10px;
+            background-color: #fffacd; /* Lemon chiffon */
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .item:hover {
+            transform: scale(1.03);
+            background-color: #fafad2; /* Light goldenrod yellow */
+            animation: pulse 0.5s;
+        }
+        .item input[type="checkbox"] {
+            margin-right: 15px;
+        }
+        .item a {
+            color: #ff6347;
+            text-decoration: none;
+            margin-left: 10px;
+            transition: color 0.3s ease;
+        }
+        .item a:hover {
+            color: #d32f2f; /* Darker red */
+            text-decoration: underline;
+        }
+        .copy-text {
+            font-style: italic;
+            color: #555;
+            margin-left: 10px;
+        }
+        #progress {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ff6347;
+            font-size: 1.2em;
+        }
+        button {
+            background-color: #ff6347;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-size: 1.1em;
+        }
+        button:hover {
+            background-color: #d32f2f;
+            transform: scale(1.1);
+        }
+        .custom-request form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .custom-request label {
+            font-weight: bold;
+            color: #ff6347;
+        }
+        .custom-request input, .custom-request select {
+            padding: 10px;
+            border: 2px solid #6b8e23;
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: #fffacd;
+        }
+        .custom-request button {
+            width: 200px;
+        }
+        #customListOutput, #mealPlanOutput {
+            margin-top: 20px;
+        }
+        .add-item-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fafad2;
+            border-radius: 10px;
+        }
+        #musicToggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #6b8e23;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 1em;
+        }
+        .meal-details {
+            background-color: #fffacd;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .dietary-tags {
+            color: #6b8e23;
+            font-style: italic;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <audio id="backgroundMusic" loop>
+        <source src="https://www.bensound.com/bensound-music/bensound-sunny.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <button id="musicToggle" onclick="toggleMusic()">🍽️ Music: Off</button>
+
+    <h1>Enhanced ADHD Grocery Tool 🥕</h1>
+    <p id="progress">Progress: 0/0 items added 🛒</p>
+
+    <div class="info">
+        <h2>Important: Log In First 🔑</h2>
+        <p><strong>Before using the "Add to Basket" links, log into your selected store account:</strong></p>
+        <ol>
+            <li>Go to the store’s website (e.g., <a href="https://www.iceland.co.uk" target="_blank">www.iceland.co.uk</a> for Iceland).</li>
+            <li>Sign in with your email and password, and enter any required verification code.</li>
+            <li>Keep the store tab open while using this tool.</li>
+        </ol>
+        <p>This ensures the links work and your basket saves. If a link fails, use the search term provided to find the item manually.</p>
+    </div>
+
+    <div class="custom-request">
+        <h2>Create Your Shopping List 📋</h2>
+        <p>Enter your budget, store, and preferences to generate a shopping list and meal plan. This tool now includes food, drinks, toiletries, and cleaning supplies.</p>
+        <form id="customListForm">
+            <label for="budget">Budget (£) 💰:</label>
+            <input type="number" id="budget" name="budget" min="10" max="500" placeholder="e.g., 150" required>
+
+            <label for="store">Shopping Place 🏬:</label>
+            <select id="store" name="store" required>
+                <option value="Iceland UK">Iceland UK</option>
+                <option value="Tesco">Tesco</option>
+                <option value="Asda">Asda</option>
+                <option value="Sainsbury’s">Sainsbury’s</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label for="duration">Duration 📅:</label>
+            <select id="duration" name="duration" required>
+                <option value="1">1 Week</option>
+                <option value="2">2 Weeks</option>
+                <option value="3">3 Weeks</option>
+                <option value="4">4 Weeks</option>
+            </select>
+
+            <label for="familySize">Family Size 👨‍👩‍👧‍👦:</label>
+            <select id="familySize" name="familySize" required>
+                <option value="1">1 Person</option>
+                <option value="2">2 People</option>
+                <option value="3-4">3-4 People</option>
+                <option value="5+">5+ People</option>
+            </select>
+
+            <label for="dietary">Dietary Preference 🥗:</label>
+            <select id="dietary" name="dietary">
+                <option value="none">None</option>
+                <option value="vegetarian">Vegetarian</option>
+                <option value="vegan">Vegan</option>
+                <option value="gluten-free">Gluten-Free</option>
+            </select>
+
+            <button type="submit">Generate Shopping List & Meal Plan 🍴</button>
+        </form>
+
+        <h3>Add Your Own Item ➕</h3>
+        <form id="addItemForm" class="add-item-form">
+            <label for="customItemName">Item Name 📦:</label>
+            <input type="text" id="customItemName" name="customItemName" placeholder="e.g., Bananas" required>
+
+            <label for="customItemPrice">Price (£) 💸:</label>
+            <input type="number" id="customItemPrice" name="customItemPrice" min="0.1" step="0.01" placeholder="e.g., 1.20" required>
+
+            <label for="customItemCategory">Category 🥕:</label>
+            <select id="customItemCategory" name="customItemCategory" required>
+                <option value="Pantry">Pantry</option>
+                <option value="Frozen">Frozen</option>
+                <option value="Fresh/Chilled">Fresh/Chilled</option>
+                <option value="Snacks">Snacks</option>
+                <option value="Household & Toiletries">Household & Toiletries</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <button type="submit">Add Item ✅</button>
+        </form>
+
+        <div id="customListOutput"></div>
+        <div id="mealPlanOutput"></div>
+        <button id="exportButton" style="display: none;" onclick="exportList()">Export List as Text 📄</button>
+    </div>
+
+    <script>
+        // Music control
+        const audio = document.getElementById('backgroundMusic');
+        const musicToggle = document.getElementById('musicToggle');
+        let isPlaying = false;
+
+        function toggleMusic() {
+            if (isPlaying) {
+                audio.pause();
+                musicToggle.textContent = '🍽️ Music: Off';
+                isPlaying = false;
+            } else {
+                audio.play()
+                    .then(() => {
+                        musicToggle.textContent = '🍽️ Music: On';
+                        isPlaying = true;
+                    })
+                    .catch(error => {
+                        console.error('Audio playback failed:', error);
+                        alert('Failed to play music. Please check your browser settings or try again.');
+                    });
+            }
+        }
+        
+        // Store-specific search URL mappings
+        const storeSearchURLs = {
+            "Iceland UK": "https://www.iceland.co.uk/search?q=",
+            "Tesco": "https://www.tesco.com/groceries/en-GB/search?query=",
+            "Asda": "https://groceries.asda.com/search/",
+            "Sainsbury’s": "https://www.sainsburys.co.uk/shop/SearchDisplayView?searchTerm=",
+            "Other": "https://www.google.com/search?q="
+        };
+
+        // --- EXPANDED PRODUCT DATABASE ---
+        const baseProducts = [
+            // Pantry
+            { name: "Pasta Shapes (500g) 🍝", basePrice: 0.88, search: "Pasta Shapes 500g", category: "Pantry", dietary: ["vegetarian", "vegan"] },
+            { name: "Long Grain Rice (1kg) 🍚", basePrice: 1.76, search: "Long Grain Rice 1kg", category: "Pantry", dietary: ["vegan", "gluten-free"] },
+            { name: "Chopped Tomatoes (400g) 🍅", basePrice: 0.83, search: "Chopped Tomatoes 400g", category: "Pantry", dietary: ["vegan", "gluten-free"] },
+            { name: "Baked Beans (4 x 410g) 🥫", basePrice: 3.47, search: "Baked Beans 4 x 410g", category: "Pantry", dietary: ["vegan", "gluten-free"] },
+            { name: "Soft Tortillas (8-pack, 320g) 🌮", basePrice: 1.32, search: "Soft Tortillas 8 pack 320g", category: "Pantry", dietary: ["vegan"] },
+            { name: "White Sliced Bread (800g) 🍞", basePrice: 1.16, search: "White Sliced Bread 800g", category: "Pantry", dietary: ["vegan"] },
+            { name: "Vegetable Oil (1L) 🛢️", basePrice: 2.04, search: "Vegetable Oil 1L", category: "Pantry", dietary: ["vegan", "gluten-free"] },
+            { name: "Plain Flour (1.5kg) 🌾", basePrice: 1.50, search: "Plain Flour 1.5kg", category: "Pantry", dietary: ["vegan"] },
+            { name: "Beef Stock Cubes (8-pack) 🥣", basePrice: 1.20, search: "Beef Stock Cubes 8 pack", category: "Pantry", dietary: [] },
+            { name: "Vegetable Stock Cubes (8-pack) 🥣", basePrice: 1.20, search: "Vegetable Stock Cubes 8 pack", category: "Pantry", dietary: ["vegan", "gluten-free"] },
+            { name: "Mixed Herbs (10g) 🌿", basePrice: 1.16, search: "Mixed Herbs 10g", category: "Pantry", dietary: ["vegan", "gluten-free"] },
+            { name: "Tinned Tuna Chunks (4 x 145g) 🐟", basePrice: 4.00, search: "Tuna Chunks in Brine 4 pack", category: "Pantry", dietary: ["gluten-free"] },
+            { name: "Porridge Oats (1kg) 🥣", basePrice: 1.00, search: "Porridge Oats 1kg", category: "Pantry", dietary: ["vegan", "gluten-free"] },
+            { name: "Breakfast Cereal (500g) 🥣", basePrice: 2.50, search: "Corn Flakes Cereal 500g", category: "Pantry", dietary: ["vegetarian"] },
+
+            // Frozen
+            { name: "Mixed Vegetables (900g) 🥕", basePrice: 1.16, search: "Mixed Vegetables 900g", category: "Frozen", dietary: ["vegan", "gluten-free"] },
+            { name: "Garden Peas (800g) 🌱", basePrice: 1.16, search: "Garden Peas 800g", category: "Frozen", dietary: ["vegan", "gluten-free"] },
+            { name: "Straight Cut Chips (1.5kg) 🍟", basePrice: 2.31, search: "Straight Cut Chips 1.5kg", category: "Frozen", dietary: ["vegan"] },
+            { name: "Beef Mince (500g) 🥩", basePrice: 3.47, search: "Beef Mince 500g", category: "Frozen", dietary: [] },
+            { name: "Chicken Breast Fillets (1kg) 🍗", basePrice: 6.93, search: "Chicken Breast Fillets 1kg", category: "Frozen", dietary: [] },
+            { name: "Pork Sausages (12-pack, 456g) 🌭", basePrice: 2.31, search: "Pork Sausages 12 pack 456g", category: "Frozen", dietary: [] },
+            { name: "Fish Fingers (10-pack) 🐟", basePrice: 2.00, search: "Fish Fingers 10 pack", category: "Frozen", dietary: [] },
+            { name: "Mini Pizza Bases (4-pack, 300g) 🍕", basePrice: 2.20, search: "Mini Pizza Bases 4 pack 300g", category: "Frozen", dietary: ["vegetarian"] },
+            { name: "Veggie Nuggets (400g) 🌽", basePrice: 2.75, search: "Veggie Nuggets 400g", category: "Frozen", dietary: ["vegan"] },
+            { name: "Vegetarian Mince (400g) 🌱", basePrice: 3.00, search: "Vegetarian Mince 400g", category: "Frozen", dietary: ["vegan"] },
+
+            // Fresh/Chilled
+            { name: "Eggs (15-pack) 🥚", basePrice: 2.92, search: "Eggs 15 pack", category: "Fresh/Chilled", dietary: ["vegetarian"] },
+            { name: "Extra Mature Cheddar Cheese (400g) 🧀", basePrice: 3.69, search: "Extra Mature Cheddar 400g", category: "Fresh/Chilled", dietary: ["vegetarian"] },
+            { name: "Semi Skimmed Milk (2L) 🥛", basePrice: 1.65, search: "Semi Skimmed Milk 2L", category: "Fresh/Chilled", dietary: ["vegetarian"] },
+            { name: "Butter/Spread (500g) 🧈", basePrice: 2.20, search: "Butter Spread 500g", category: "Fresh/Chilled", dietary: ["vegetarian"] },
+            { name: "Onions (1kg) 🧅", basePrice: 1.16, search: "Onions 1kg", category: "Fresh/Chilled", dietary: ["vegan", "gluten-free"] },
+            { name: "Potatoes (2.5kg) 🥔", basePrice: 2.31, search: "Potatoes 2.5kg", category: "Fresh/Chilled", dietary: ["vegan", "gluten-free"] },
+            { name: "Carrots (1kg) 🥕", basePrice: 0.88, search: "Carrots 1kg", category: "Fresh/Chilled", dietary: ["vegan", "gluten-free"] },
+            { name: "Apples (6-pack, 900g) 🍎", basePrice: 1.98, search: "Apples 6 pack 900g", category: "Fresh/Chilled", dietary: ["vegan", "gluten-free"] },
+            { name: "Bananas (5-pack) 🍌", basePrice: 0.90, search: "Bananas 5 pack", category: "Fresh/Chilled", dietary: ["vegan", "gluten-free"] },
+            { name: "Lettuce (1-pack) 🥬", basePrice: 0.80, search: "Iceberg Lettuce", category: "Fresh/Chilled", dietary: ["vegan", "gluten-free"] },
+            { name: "Mayonnaise (500ml) 🧴", basePrice: 1.50, search: "Mayonnaise 500ml", category: "Fresh/Chilled", dietary: ["vegetarian"] },
+            
+            // Snacks
+            { name: "Yogurt Tubes (8-pack, 320g) 🥤", basePrice: 1.65, search: "Yogurt Tubes 8 pack 320g", category: "Snacks", dietary: ["vegetarian"] },
+            { name: "Digestive Biscuits (400g) 🍪", basePrice: 1.10, search: "Digestive Biscuits 400g", category: "Snacks", dietary: ["vegetarian"] },
+            { name: "Multipack Crisps (6-pack, 150g) 🍿", basePrice: 1.65, search: "Multipack Crisps 6 pack 150g", category: "Snacks", dietary: ["vegan"] },
+            { name: "Chocolate Bars (4-pack, 160g) 🍫", basePrice: 1.32, search: "Chocolate Bars 4 pack 160g", category: "Snacks", dietary: ["vegetarian"] },
+
+            // Other
+            { name: "Tomato Ketchup (550g) 🍅", basePrice: 1.16, search: "Tomato Ketchup 550g", category: "Other", dietary: ["vegan", "gluten-free"] },
+            { name: "Strawberry Jam (454g) 🍓", basePrice: 1.16, search: "Strawberry Jam 454g", category: "Other", dietary: ["vegan", "gluten-free"] },
+            { name: "Tea Bags (80-pack) ☕", basePrice: 1.76, search: "Tea Bags 80 pack", category: "Other", dietary: ["vegan", "gluten-free"] },
+            { name: "Granulated Sugar (1kg) 🍬", basePrice: 1.76, search: "Granulated Sugar 1kg", category: "Other", dietary: ["vegan", "gluten-free"] },
+            { name: "Fruit Squash (1.5L) 🥤", basePrice: 1.65, search: "Fruit Squash 1.5L", category: "Other", dietary: ["vegan", "gluten-free"] },
+            
+            // Household & Toiletries
+            { name: "Toilet Roll (9-pack) 🧻", basePrice: 3.85, search: "Toilet Roll 9 pack", category: "Household & Toiletries", dietary: [] },
+            { name: "Kitchen Roll (2-pack) 🧻", basePrice: 2.00, search: "Kitchen Roll 2 pack", category: "Household & Toiletries", dietary: [] },
+            { name: "Washing Up Liquid (500ml) 🫧", basePrice: 1.00, search: "Washing Up Liquid 500ml", category: "Household & Toiletries", dietary: [] },
+            { name: "Multi-Surface Cleaner (750ml) ✨", basePrice: 1.50, search: "Multi-Surface Cleaner 750ml", category: "Household & Toiletries", dietary: [] },
+            { name: "Laundry Detergent (40 washes) 🧺", basePrice: 5.00, search: "Laundry Detergent Liquid 40 wash", category: "Household & Toiletries", dietary: [] },
+            { name: "Shampoo (400ml) 🧴", basePrice: 2.00, search: "Shampoo 400ml", category: "Household & Toiletries", dietary: [] },
+            { name: "Toothpaste (100ml) 🦷", basePrice: 1.00, search: "Toothpaste 100ml", category: "Household & Toiletries", dietary: [] },
+            { name: "Hand Soap (250ml) 🧼", basePrice: 1.00, search: "Hand Soap 250ml", category: "Household & Toiletries", dietary: [] }
+        ];
+
+        // --- EXPANDED RECIPE DATABASE ---
+        const recipes = {
+            // Dinner
+            "Spaghetti Bolognese": { description: "A hearty pasta dish with a rich tomato and beef sauce.", mealType: "dinner", dietary: ["none"], ingredients: ["Beef Mince (500g)", "Onion (1kg)", "Vegetable Oil (1L)", "Chopped Tomatoes (400g)", "Mixed Herbs (10g)", "Pasta Shapes (500g)"], prepTime: "10 min", cookTime: "20 min", serves: "3-4", cost: "~£4.50", emoji: "🍝" },
+            "Veggie Bolognese": { description: "A hearty pasta dish with a rich tomato and lentil/veggie mince sauce.", mealType: "dinner", dietary: ["vegan", "vegetarian"], ingredients: ["Vegetarian Mince (400g)", "Onion (1kg)", "Vegetable Oil (1L)", "Chopped Tomatoes (400g)", "Mixed Herbs (10g)", "Pasta Shapes (500g)"], prepTime: "10 min", cookTime: "20 min", serves: "3-4", cost: "~£4.50", emoji: "🍝" },
+            "Chicken Stir-Fry": { description: "A quick and colorful stir-fry with chicken and vegetables.", mealType: "dinner", dietary: ["none"], ingredients: ["Long Grain Rice (1kg)", "Chicken Breast Fillets (1kg)", "Onion (1kg)", "Mixed Vegetables (900g)", "Vegetable Oil (1L)"], prepTime: "10 min", cookTime: "15 min", serves: "3-4", cost: "~£5.50", emoji: "🍚" },
+            "Taco Night": { description: "Fun and customizable tacos with beef and cheese.", mealType: "dinner", dietary: ["none"], ingredients: ["Beef Mince (500g)", "Onion (1kg)", "Soft Tortillas (8-pack, 320g)", "Extra Mature Cheddar Cheese (400g)"], prepTime: "10 min", cookTime: "15 min", serves: "3-4", cost: "~£4.80", emoji: "🌮" },
+            "Sausage and Mash": { description: "Classic comfort food with sausages, mashed potatoes, and peas.", mealType: "dinner", dietary: ["none"], ingredients: ["Potatoes (2.5kg)", "Semi Skimmed Milk (2L)", "Pork Sausages (12-pack, 456g)", "Garden Peas (800g)", "Butter/Spread (500g)"], prepTime: "15 min", cookTime: "25 min", serves: "3-4", cost: "~£4.00", emoji: "🌭" },
+            "Build-Your-Own Pizza": { description: "A fun, customizable pizza with tomato and cheese.", mealType: "dinner", dietary: ["vegetarian"], ingredients: ["Chopped Tomatoes (400g)", "Mini Pizza Bases (4-pack, 300g)", "Extra Mature Cheddar Cheese (400g)", "Mixed Herbs (10g)"], prepTime: "10 min", cookTime: "15 min", serves: "3-4", cost: "~£5.00", emoji: "🍕" },
+            "Chicken and Chips": { description: "A simple meal of baked chicken, chips, and vegetables.", mealType: "dinner", dietary: ["none"], ingredients: ["Chicken Breast Fillets (1kg)", "Straight Cut Chips (1.5kg)", "Mixed Vegetables (900g)"], prepTime: "5 min", cookTime: "25 min", serves: "3-4", cost: "~£5.00", emoji: "🍟" },
+            "Veggie Nuggets and Chips": { description: "A kid-friendly vegan dinner with nuggets and chips.", mealType: "dinner", dietary: ["vegan"], ingredients: ["Veggie Nuggets (400g)", "Straight Cut Chips (1.5kg)"], prepTime: "5 min", cookTime: "20 min", serves: "3-4", cost: "~£3.50", emoji: "🌽" },
+            "Cottage Pie": { description: "A comforting beef mince and vegetable pie topped with mashed potato.", mealType: "dinner", dietary: ["none"], ingredients: ["Beef Mince (500g)", "Potatoes (2.5kg)", "Onion (1kg)", "Carrots (1kg)", "Beef Stock Cubes (8-pack)", "Butter/Spread (500g)"], prepTime: "20 min", cookTime: "30 min", serves: "4", cost: "~£5.00", emoji: "🥧" },
+            "Shepherd's Pie (Veggie)": { description: "A comforting veggie mince and vegetable pie topped with mashed potato.", mealType: "dinner", dietary: ["vegetarian"], ingredients: ["Vegetarian Mince (400g)", "Potatoes (2.5kg)", "Onion (1kg)", "Carrots (1kg)", "Vegetable Stock Cubes (8-pack)", "Butter/Spread (500g)"], prepTime: "20 min", cookTime: "30 min", serves: "4", cost: "~£5.00", emoji: "🥧" },
+            "Jacket Potato with Beans & Cheese": { description: "A fluffy baked potato with classic toppings.", mealType: "dinner", dietary: ["vegetarian", "gluten-free"], ingredients: ["Potatoes (2.5kg)", "Baked Beans (4 x 410g)", "Extra Mature Cheddar Cheese (400g)", "Butter/Spread (500g)"], prepTime: "5 min", cookTime: "60 min", serves: "4", cost: "~£3.50", emoji: "🥔" },
+            "Fish Finger Sandwiches": { description: "A nostalgic classic, perfect for a quick dinner.", mealType: "dinner", dietary: ["none"], ingredients: ["Fish Fingers (10-pack)", "White Sliced Bread (800g)", "Tomato Ketchup (550g)", "Butter/Spread (500g)"], prepTime: "5 min", cookTime: "15 min", serves: "2-3", cost: "~£3.00", emoji: "🥪" },
+
+            // Lunch
+            "Beans on Toast": { description: "A simple and comforting classic.", mealType: "lunch", dietary: ["vegan", "gluten-free"], ingredients: ["Baked Beans (4 x 410g)", "White Sliced Bread (800g)"], prepTime: "2 min", cookTime: "5 min", serves: "4", cost: "~£1.80", emoji: "🍞" },
+            "Cheese Sandwiches": { description: "A simple and satisfying lunch option.", mealType: "lunch", dietary: ["vegetarian"], ingredients: ["White Sliced Bread (800g)", "Extra Mature Cheddar Cheese (400g)", "Butter/Spread (500g)"], prepTime: "5 min", cookTime: "0 min", serves: "4", cost: "~£2.00", emoji: "🧀" },
+            "Tuna Mayo Sandwiches": { description: "A classic sandwich filling that's quick and easy.", mealType: "lunch", dietary: ["none"], ingredients: ["Tinned Tuna Chunks (4 x 145g)", "Mayonnaise (500ml)", "White Sliced Bread (800g)"], prepTime: "5 min", cookTime: "0 min", serves: "4", cost: "~£3.00", emoji: "🥪" },
+            "Cheese and Salad Sandwiches": { description: "A fresh and crunchy lunch.", mealType: "lunch", dietary: ["vegetarian"], ingredients: ["White Sliced Bread (800g)", "Extra Mature Cheddar Cheese (400g)", "Lettuce (1-pack)", "Butter/Spread (500g)"], prepTime: "8 min", cookTime: "0 min", serves: "4", cost: "~£2.50", emoji: "🥬" },
+            "Scrambled Eggs on Toast": { description: "A quick and protein-packed meal.", mealType: "lunch", dietary: ["vegetarian"], ingredients: ["Eggs (15-pack)", "Semi Skimmed Milk (2L)", "White Sliced Bread (800g)", "Butter/Spread (500g)"], prepTime: "5 min", cookTime: "5 min", serves: "3-4", cost: "~£1.50", emoji: "🥚" },
+
+            // Breakfast
+            "Cereal with Milk": { description: "A quick and easy start to the day.", mealType: "breakfast", dietary: ["vegetarian"], ingredients: ["Breakfast Cereal (500g)", "Semi Skimmed Milk (2L)"], prepTime: "2 min", cookTime: "0 min", serves: "5+", cost: "~£0.80/serving", emoji: "🥣" },
+            "Porridge with Banana": { description: "A warm and filling breakfast.", mealType: "breakfast", dietary: ["vegan", "gluten-free"], ingredients: ["Porridge Oats (1kg)", "Semi Skimmed Milk (2L)", "Bananas (5-pack)"], prepTime: "2 min", cookTime: "5 min", serves: "5+", cost: "~£0.50/serving", emoji: "🥣" },
+            "Toast with Jam": { description: "A sweet and simple breakfast.", mealType: "breakfast", dietary: ["vegan"], ingredients: ["White Sliced Bread (800g)", "Strawberry Jam (454g)", "Butter/Spread (500g)"], prepTime: "2 min", cookTime: "3 min", serves: "5+", cost: "~£0.40/serving", emoji: "🍓" },
+            "Yogurt and Apple": { description: "A refreshing and healthy breakfast or snack.", mealType: "breakfast", dietary: ["vegetarian", "gluten-free"], ingredients: ["Yogurt Tubes (8-pack, 320g)", "Apples (6-pack, 900g)"], prepTime: "5 min", cookTime: "0 min", serves: "4", cost: "~£2.00", emoji: "🍎" },
+
+            // Placeholders
+            "Treat": { description: "A small chocolate treat for dessert or snack.", mealType: "snack", dietary: ["vegetarian"], ingredients: ["Chocolate Bars (4-pack, 160g)"], prepTime: "1 min", cookTime: "0 min", serves: "1", cost: "~£0.30", emoji: "🍫" },
+            "Drink": { description: "A refreshing fruit squash drink.", mealType: "drink", dietary: ["vegan", "gluten-free"], ingredients: ["Fruit Squash (1.5L)"], prepTime: "2 min", cookTime: "0 min", serves: "Many", cost: "~£0.10/serving", emoji: "🥤" }
+        };
+
+        let shoppingList = [];
+        let totalItems = 0;
+        let generatedMealPlan = {};
+
+        // Shuffle array for randomization
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function updateProgress() {
+            const checkedCount = shoppingList.filter(item => item.checked).length;
+            totalItems = shoppingList.length;
+            document.getElementById('progress').textContent = `Progress: ${checkedCount}/${totalItems} items added 🛒`;
+        }
+
+        document.getElementById('customListForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const budget = parseFloat(document.getElementById('budget').value);
+            const store = document.getElementById('store').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            const familySize = document.getElementById('familySize').value;
+            const dietary = document.getElementById('dietary').value;
+
+            if (!budget || budget < 10 || budget > 500 || isNaN(duration) || !store || !familySize) {
+                alert("Please fill in all fields with valid values (budget: £10-£500). 🚨");
+                return;
+            }
+
+            // --- SMART LIST GENERATION LOGIC ---
+            
+            shoppingList = [];
+            let totalCost = 0;
+            const addedItems = new Set();
+
+            // 1. Adjust for family size and store
+            let familyMultiplier = 1;
+            if (familySize === "1") familyMultiplier = 0.5;
+            else if (familySize === "2") familyMultiplier = 0.75;
+            else if (familySize === "3-4") familyMultiplier = 1;
+            else if (familySize === "5+") familyMultiplier = 1.5;
+
+            const products = baseProducts.map(item => {
+                let priceAdjustment = (store !== "Iceland UK") ? 1.1 + (Math.random() * 0.2 - 0.1) : 1;
+                return {
+                    ...item,
+                    price: item.basePrice * priceAdjustment,
+                    url: storeSearchURLs[store] + encodeURIComponent(item.search)
+                };
+            });
+
+            // Helper function to add items to the list
+            const addItemToList = (product, quantity) => {
+                if (!product || addedItems.has(product.name)) return;
+                const itemCost = product.price * quantity;
+                if (totalCost + itemCost <= budget) {
+                    shoppingList.push({ ...product, quantity, total: itemCost, checked: false });
+                    totalCost += itemCost;
+                    addedItems.add(product.name);
+                }
+            };
+            
+            // 2. Select Dinner Recipes and add ingredients
+            const dinnerRecipes = shuffle(Object.keys(recipes).filter(r => recipes[r].mealType === 'dinner' && (dietary === 'none' || recipes[r].dietary.includes(dietary))));
+            generatedMealPlan.dinners = [];
+            const numDinners = duration * 7;
+            for (let i = 0; i < numDinners; i++) {
+                const recipeName = dinnerRecipes[i % dinnerRecipes.length];
+                generatedMealPlan.dinners.push(recipeName);
+                recipes[recipeName].ingredients.forEach(ingredientName => {
+                    const product = products.find(p => p.name === ingredientName);
+                    if (product) {
+                        let quantity = 1; // Default quantity
+                        if (product.category === 'Pantry' || product.category === 'Frozen' || product.category === 'Fresh/Chilled') {
+                            quantity = Math.ceil(duration * 0.5 * familyMultiplier);
+                        }
+                        addItemToList(product, Math.max(1, quantity));
+                    }
+                });
+            }
+
+            // 3. Add staples (Breakfast, Lunch, Household)
+            const staples = [
+                "White Sliced Bread (800g) 🍞", "Semi Skimmed Milk (2L) 🥛", "Butter/Spread (500g) 🧈", 
+                "Porridge Oats (1kg) 🥣", "Breakfast Cereal (500g) 🥣", "Baked Beans (4 x 410g) 🥫",
+                "Tinned Tuna Chunks (4 x 145g) 🐟", "Eggs (15-pack) 🥚", "Toilet Roll (9-pack) 🧻", 
+                "Washing Up Liquid (500ml) 🫧", "Toothpaste (100ml) 🦷"
+            ];
+            staples.forEach(stapleName => {
+                const product = products.find(p => p.name === stapleName);
+                if(product){
+                    let quantity = Math.ceil(duration * familyMultiplier);
+                    addItemToList(product, Math.max(1, quantity));
+                }
+            });
+
+            // 4. Fill remaining budget with other useful items
+            const otherItems = shuffle(products.filter(p => !addedItems.has(p.name)));
+            otherItems.forEach(item => {
+                let quantity = 1;
+                if(item.category === 'Snacks' || item.category === 'Other' || item.category === 'Household & Toiletries') {
+                    quantity = Math.ceil(duration * 0.5 * familyMultiplier);
+                }
+                addItemToList(item, Math.max(1, quantity));
+            });
+
+            if (shoppingList.length === 0) {
+                alert("No items could be added. Please increase your budget or adjust preferences. 🚨");
+                return;
+            }
+
+            // 5. Generate output
+            generateListOutput(store, duration, familySize, dietary, totalCost);
+            generateMealPlanOutput(duration, dietary);
+
+            document.getElementById('exportButton').style.display = 'block';
+            localStorage.setItem('lastShoppingList', JSON.stringify(shoppingList));
+        });
+        
+        function generateListOutput(store, duration, familySize, dietary, totalCost) {
+            let output = `<h3>Shopping List for ${duration} Week${duration > 1 ? 's' : ''} at ${store} (Family of ${familySize}, ${dietary === 'none' ? 'No Dietary Preference' : dietary.charAt(0).toUpperCase() + dietary.slice(1)}) 🛍️</h3>`;
+            output += `<p><strong>Estimated Total: £${totalCost.toFixed(2)}</strong> (Prices are estimates) 💰</p>`;
+
+            const categories = ["Pantry", "Frozen", "Fresh/Chilled", "Snacks", "Household & Toiletries", "Other"];
+            categories.forEach(category => {
+                const categoryItems = shoppingList.filter(item => item.category === category);
+                if (categoryItems.length > 0) {
+                    const emoji = (category === "Household & Toiletries") ? "🧼" : "🥕";
+                    output += `<h4>${category} ${emoji}</h4>`;
+                    categoryItems.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+                        const globalIndex = shoppingList.indexOf(item);
+                        output += `
+                            <div class="item">
+                                <input type="checkbox" id="item-${globalIndex}" onchange="toggleItem(${globalIndex})" ${item.checked ? 'checked' : ''}>
+                                <span>${item.name} x ${item.quantity} (£${item.total.toFixed(2)})</span>
+                                <a href="${item.url}" target="_blank">Add to Basket 🛒</a>
+                                <span class="copy-text">Search: ${item.search}</span>
+                            </div>`;
+                    });
+                }
+            });
+            document.getElementById('customListOutput').innerHTML = output;
+            updateProgress();
+        }
+
+        function generateMealPlanOutput(duration, dietary) {
+             const breakfastRecipes = shuffle(Object.keys(recipes).filter(r => recipes[r].mealType === "breakfast" && (dietary === 'none' || recipes[r].dietary.includes(dietary))));
+             const lunchRecipes = shuffle(Object.keys(recipes).filter(r => recipes[r].mealType === "lunch" && (dietary === 'none' || recipes[r].dietary.includes(dietary))));
+             
+             let mealPlanOutput = `<h3>Meal Plan for ${duration} Week${duration > 1 ? 's' : ''} 🍴</h3>`;
+             for (let day = 1; day <= duration * 7; day++) {
+                const breakfast = breakfastRecipes[(day - 1) % breakfastRecipes.length] || "Toast with Jam";
+                const lunch = lunchRecipes[(day - 1) % lunchRecipes.length] || "Cheese Sandwiches";
+                const dinner = generatedMealPlan.dinners[day - 1] || "Pasta Bake";
+                
+                mealPlanOutput += `<h4>Day ${day} 📅</h4>`;
+                [breakfast, lunch, dinner].forEach(mealName => {
+                    const meal = recipes[mealName];
+                    if (!meal) return;
+                    mealPlanOutput += `
+                        <div class="meal-details">
+                            <p><strong>${meal.mealType.charAt(0).toUpperCase() + meal.mealType.slice(1)}: ${mealName}</strong> ${meal.emoji || ''}</p>
+                            <p>${meal.description}</p>
+                            <p><strong>Ingredients</strong>: ${meal.ingredients.join(", ")}</p>
+                            <p class="dietary-tags"><strong>Dietary</strong>: ${meal.dietary.join(", ") || "None"}</p>
+                        </div>`;
+                });
+            }
+            document.getElementById('mealPlanOutput').innerHTML = mealPlanOutput;
+        }
+
+
+        document.getElementById('addItemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('customItemName').value;
+            const price = parseFloat(document.getElementById('customItemPrice').value);
+            const category = document.getElementById('customItemCategory').value;
+            const store = document.getElementById('store').value;
+
+            if (!name || isNaN(price) || price < 0.1) {
+                alert("Please enter a valid item name and price (minimum £0.10). 🚨");
+                return;
+            }
+
+            const newItem = {
+                name: `${name} 🛍️`, price, url: storeSearchURLs[store] + encodeURIComponent(name),
+                search: name, category, recipe: "Custom Item", quantity: 1, total: price,
+                checked: false, dietary: ["none"]
+            };
+
+            shoppingList.push(newItem);
+            
+            // Regenerate the list output to include the new item
+            const totalCost = shoppingList.reduce((sum, item) => sum + item.total, 0);
+            const duration = parseInt(document.getElementById('duration').value) || 1;
+            const familySize = document.getElementById('familySize').value;
+            const dietary = document.getElementById('dietary').value;
+            
+            generateListOutput(store, duration, familySize, dietary, totalCost);
+            this.reset();
+        });
+
+        function toggleItem(index) {
+            shoppingList[index].checked = !shoppingList[index].checked;
+            updateProgress();
+        }
+
+        function exportList() {
+            const duration = parseInt(document.getElementById('duration').value) || 1;
+            const store = document.getElementById('store').value || "Selected Store";
+            const familySize = document.getElementById('familySize').value || "Unknown";
+            const dietary = document.getElementById('dietary').value || "None";
+            let totalCost = shoppingList.reduce((sum, item) => sum + item.total, 0);
+
+            let textOutput = `Philo Siphers Enhanced ADHD Grocery Tool - Shopping List & Meal Plan 🥕\n`;
+            textOutput += `======================================================================\n\n`;
+            textOutput += `Store: ${store} 🏬 | Duration: ${duration} Week(s) 📅 | Family Size: ${familySize} 👨‍👩‍👧‍👦 | Dietary: ${dietary} 🥗\n`;
+            textOutput += `Estimated Total: £${totalCost.toFixed(2)} 💰 (Note: Prices are estimates)\n\n`;
+            
+            textOutput += `--- SHOPPING LIST ---\n`;
+            const categories = ["Pantry", "Frozen", "Fresh/Chilled", "Snacks", "Household & Toiletries", "Other"];
+            categories.forEach(category => {
+                const categoryItems = shoppingList.filter(item => item.category === category).sort((a,b) => a.name.localeCompare(b.name));
+                if (categoryItems.length > 0) {
+                    const emoji = (category === "Household & Toiletries") ? "🧼" : "🥕";
+                    textOutput += `\n${category.toUpperCase()} ${emoji}\n--------------------------\n`;
+                    categoryItems.forEach(item => {
+                        textOutput += `- ${item.name} x ${item.quantity} (£${item.total.toFixed(2)})\n  (Search for: "${item.search}")\n`;
+                    });
+                }
+            });
+
+            textOutput += `\n\n--- MEAL PLAN --- \n=================\n`;
+            const breakfastRecipes = shuffle(Object.keys(recipes).filter(r => recipes[r].mealType === "breakfast" && (dietary === 'none' || recipes[r].dietary.includes(dietary))));
+            const lunchRecipes = shuffle(Object.keys(recipes).filter(r => recipes[r].mealType === "lunch" && (dietary === 'none' || recipes[r].dietary.includes(dietary))));
+            for (let day = 1; day <= duration * 7; day++) {
+                const breakfast = breakfastRecipes[(day - 1) % breakfastRecipes.length];
+                const lunch = lunchRecipes[(day - 1) % lunchRecipes.length];
+                const dinner = generatedMealPlan.dinners[day - 1];
+                textOutput += `\n--- Day ${day} ---\n`;
+                textOutput += `Breakfast: ${breakfast} ${recipes[breakfast].emoji}\n`;
+                textOutput += `Lunch:     ${lunch} ${recipes[lunch].emoji}\n`;
+                textOutput += `Dinner:    ${dinner} ${recipes[dinner].emoji}\n`;
+            }
+            
+            const blob = new Blob([textOutput], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `grocery-plan-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
